@@ -52,10 +52,15 @@
         }
 
         h1 {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             color: var(--accent-gold);
             letter-spacing: 1px;
             margin: 0;
+        }
+
+        .header-btns {
+            display: flex;
+            gap: 6px;
         }
 
         .mode-badge {
@@ -83,7 +88,7 @@
         .status-bar {
             background: rgba(0,0,0,0.4);
             border-radius: 8px;
-            padding: 8px 12px;
+            padding: 6px 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -92,18 +97,42 @@
         }
 
         .message-box {
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.85);
             color: var(--accent-gold);
-            padding: 10px;
+            padding: 12px;
             text-align: center;
             border-radius: 8px;
             font-weight: bold;
             font-size: 0.95rem;
-            border: 1px solid var(--accent-gold);
-            min-height: 42px;
+            border: 2px solid var(--accent-gold);
+            min-height: 54px;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            transition: transform 0.1s;
+        }
+
+        .message-box:active {
+            transform: scale(0.98);
+        }
+
+        .tap-prompt {
+            font-size: 0.75rem;
+            color: #fff;
+            background: rgba(230, 198, 25, 0.3);
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-top: 4px;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
         }
 
         /* Play Area Layout */
@@ -212,8 +241,9 @@
         }
 
         .card.disabled {
-            opacity: 0.5;
+            opacity: 0.4;
             cursor: not-allowed;
+            filter: grayscale(80%);
         }
 
         .card.face-up-face-card {
@@ -270,8 +300,6 @@
         .btn:hover { background: #1d4ed8; }
         .btn-gold { background: #d97706; color: #fff; }
         .btn-gold:hover { background: #b45309; }
-        .btn-danger { background: #dc2626; }
-        .btn-danger:hover { background: #b91c1c; }
         .btn-secondary { background: #4b5563; }
         .btn-secondary:hover { background: #374151; }
 
@@ -279,7 +307,7 @@
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.85);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -313,11 +341,26 @@
             font-size: 0.9rem;
         }
 
-        .graveyard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
-            gap: 6px;
-            margin-top: 8px;
+        .graveyard-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.05);
+            padding: 6px;
+            border-radius: 6px;
+            margin-bottom: 4px;
+        }
+
+        .graveyard-reason {
+            font-size: 0.75rem;
+            color: #d1d5db;
+        }
+
+        .log-item {
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            font-size: 0.8rem;
+            line-height: 1.4;
         }
 
         .peer-id-box {
@@ -331,7 +374,7 @@
             word-break: break-all;
         }
 
-        input[type="text"] {
+        input[type="text"], select {
             width: 100%;
             padding: 10px;
             border-radius: 6px;
@@ -362,7 +405,11 @@
 
     <header>
         <h1>ドン・キホーテ</h1>
-        <div id="modeBadge" class="mode-badge">メニュー</div>
+        <div class="header-btns">
+            <button class="btn btn-secondary" onclick="openLogModal()" style="padding: 4px 8px; font-size:0.75rem;">📜 ログ</button>
+            <button class="btn btn-secondary" onclick="openGraveyardModal()" style="padding: 4px 8px; font-size:0.75rem;">🪦 墓地</button>
+            <div id="modeBadge" class="mode-badge">メニュー</div>
+        </div>
     </header>
 
     <div id="app">
@@ -370,12 +417,12 @@
         <div class="status-bar">
             <div>ターン: <span id="turnIndicator" style="color:var(--accent-gold); font-weight:bold;">-</span></div>
             <div>勝ち札 P1: <span id="p1Score">0</span>枚 | P2: <span id="p2Score">0</span>枚</div>
-            <button class="btn btn-secondary" onclick="openGraveyardModal()" style="padding: 4px 8px; font-size:0.75rem;">🪦 墓地を見る</button>
         </div>
 
-        <!-- Banner Message -->
-        <div id="messageBox" class="message-box">
-            モードを選択してください
+        <!-- Banner Message (Clickable for Next Step) -->
+        <div id="messageBox" class="message-box" onclick="handleMessageClick()">
+            <div id="messageText">モードを選択してください</div>
+            <div id="tapPrompt" class="tap-prompt hidden">▶ タップして進む</div>
         </div>
 
         <!-- Main Game Field -->
@@ -383,7 +430,7 @@
             <!-- Opponent Zone (Player 2 / CPU) -->
             <div id="p2Zone" class="player-zone">
                 <div class="zone-header">
-                    <span id="p2Name">PLAYER 2 (後攻)</span>
+                    <span id="p2Name">PLAYER 2</span>
                     <span id="p2CardCounts">手札: 0 | 伏せ: 0</span>
                 </div>
 
@@ -431,6 +478,7 @@
 
         <!-- Action Controls -->
         <div class="controls" id="actionControls">
+            <button id="btnConfirmSelect" class="btn btn-gold hidden" onclick="handleConfirmSetupSelection()">✅ 確定する</button>
             <button id="btnAttack" class="btn btn-gold" onclick="handleAttackAction()">⚔️ 攻撃する</button>
             <button id="btnFaceDown" class="btn" onclick="handleSetFacedownAction()">🛡️ カードを伏せる</button>
         </div>
@@ -450,13 +498,22 @@
             <div class="modal-content">
                 <p>カードの大きさを競う戦略トランプゲーム</p>
 
-                <div style="margin: 10px 0;">
+                <div style="margin: 6px 0;">
+                    <label style="display:block; font-weight:bold; margin-bottom:4px;">🤖 CPU難易度:</label>
+                    <select id="cpuLevelSelect">
+                        <option value="easy">初級 (かんたん)</option>
+                        <option value="normal" selected>中級 (ふつう)</option>
+                        <option value="hard">上級 (つよい)</option>
+                    </select>
+                </div>
+
+                <div style="margin: 6px 0;">
                     <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
                         <input type="checkbox" id="gambleModeToggle" style="width:18px; height:18px;">
                         <strong>💰 ギャンブルルールを有効にする</strong>
                     </label>
                     <p style="font-size:0.75rem; color:#aaa; margin-left:26px; margin-top:2px;">
-                        レート札を最初に裏で設定。勝ち札の差×レートで計算します（JQK=10）。
+                        レート札を裏で設定。勝利時「枚数差 × レート札数字」をスコア計算。
                     </p>
                 </div>
 
@@ -508,18 +565,29 @@
     <!-- Graveyard Modal -->
     <div id="graveyardModal" class="modal-overlay hidden">
         <div class="modal">
-            <div class="modal-title">🪦 墓地の一覧 (公開情報)</div>
+            <div class="modal-title">🪦 墓地履歴 (いつ・どうやって捨てられたか)</div>
             <div class="modal-content">
                 <div>
                     <strong>P1 の墓地:</strong>
-                    <div id="p1GraveyardList" class="graveyard-grid"></div>
+                    <div id="p1GraveyardList" style="margin-top:6px;"></div>
                 </div>
                 <hr style="border-color:#374151;">
                 <div>
                     <strong>P2 の墓地:</strong>
-                    <div id="p2GraveyardList" class="graveyard-grid"></div>
+                    <div id="p2GraveyardList" style="margin-top:6px;"></div>
                 </div>
                 <button class="btn btn-secondary" onclick="closeGraveyardModal()" style="margin-top:12px;">閉じる</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Battle Log Modal -->
+    <div id="logModal" class="modal-overlay hidden">
+        <div class="modal">
+            <div class="modal-title">📜 バトルログ (行動履歴)</div>
+            <div class="modal-content">
+                <div id="logList" style="max-height: 60vh; overflow-y: auto;"></div>
+                <button class="btn btn-secondary" onclick="closeLogModal()" style="margin-top:12px;">閉じる</button>
             </div>
         </div>
     </div>
@@ -545,22 +613,28 @@
 
         /* --- GAME STATE --- */
         let gameMode = 'cpu'; // 'cpu', 'local', 'online'
+        let cpuLevel = 'normal'; // 'easy', 'normal', 'hard'
         let isGambleMode = false;
         let myPlayerId = 'p1'; // 'p1' or 'p2'
 
-        let phase = 'INIT'; // INIT, FIRST_PLAYER_SELECT, RATE_SELECT, PLAYING, GAME_OVER
+        // Phases: INIT, RATE_SELECT, FIRST_PLAYER_SELECT, SETUP_FACEDOWN, PLAYING, GAME_OVER
+        let phase = 'INIT'; 
         let currentTurn = 'p1'; // 'p1' or 'p2'
+        let setupSubPhase = 'p1'; // 'p1' then 'p2' for setup steps
         
         let p1Hand = [], p2Hand = [];
-        let p1Facedown = [], p2Facedown = []; // Items: { id, num, suit, isFaceUp }
+        let p1Facedown = [], p2Facedown = []; // { id, num, suit, isFaceUp }
         let p1WonCards = [], p2WonCards = [];
-        let p1Graveyard = [], p2Graveyard = [];
+        let p1Graveyard = [], p2Graveyard = []; // { card, reason, turn }
 
         let p1RateCard = null, p2RateCard = null;
         let p1FirstCard = null, p2FirstCard = null;
 
-        let selectedHandCardId = null;
+        let selectedHandCardIds = []; // Multi-select for initial facedown or single
         let selectedTargetGuardId = null;
+
+        let gameLogs = [];
+        let pendingNextStep = null; // Callback when message clicked
 
         // PeerJS state
         let peer = null;
@@ -578,17 +652,23 @@
             return deck;
         }
 
+        /* --- LOGGING --- */
+        function addLog(msg) {
+            gameLogs.push(msg);
+        }
+
         /* --- UI RENDER FUNCTIONS --- */
         function renderCard(card, options = {}) {
             if (!card) return '';
             const isFacedown = options.isFacedown;
             const isSelected = options.isSelected;
-            const onClick = options.onClick ? `onclick="${options.onClick}"` : '';
+            const isDisabled = options.isDisabled;
+            const onClick = options.onClick && !isDisabled ? `onclick="${options.onClick}"` : '';
             const extraClass = options.extraClass || '';
 
             if (isFacedown) {
                 const backClass = options.isRate ? 'card-back rate-card-back' : 'card-back';
-                return `<div class="card ${backClass} ${isSelected ? 'selected' : ''}" ${onClick}>
+                return `<div class="card ${backClass} ${isSelected ? 'selected' : ''} ${isDisabled ? 'disabled' : ''}" ${onClick}>
                     ${options.isRate ? '💰' : '🛡️'}
                 </div>`;
             }
@@ -599,7 +679,7 @@
             const displayNum = isJoker ? 'JK' : (card.num === 1 ? 'A' : card.num === 11 ? 'J' : card.num === 12 ? 'Q' : card.num === 13 ? 'K' : card.num);
 
             return `
-                <div class="card ${colorClass} ${isSelected ? 'selected' : ''} ${extraClass}" ${onClick}>
+                <div class="card ${colorClass} ${isSelected ? 'selected' : ''} ${isDisabled ? 'disabled' : ''} ${extraClass}" ${onClick}>
                     <div class="card-corner">${displayNum}<br>${card.suit}</div>
                     <div class="card-center">${displayNum}</div>
                     <div class="card-corner" style="transform: rotate(180deg);">${displayNum}<br>${card.suit}</div>
@@ -610,10 +690,11 @@
         function updateUI() {
             // Mode Badge
             const badge = document.getElementById('modeBadge');
-            badge.textContent = gameMode === 'cpu' ? '対CPU' : gameMode === 'local' ? 'ローカル2人' : 'オンライン';
+            badge.textContent = gameMode === 'cpu' ? `CPU(${cpuLevel.toUpperCase()})` : gameMode === 'local' ? 'ローカル2人' : 'オンライン';
 
             // Status Bar
-            document.getElementById('turnIndicator').textContent = phase === 'GAME_OVER' ? '終了' : (currentTurn === 'p1' ? 'PLAYER 1' : 'PLAYER 2');
+            const turnText = (phase === 'RATE_SELECT' || phase === 'FIRST_PLAYER_SELECT' || phase === 'SETUP_FACEDOWN') ? `${setupSubPhase.toUpperCase()} 選択中` : (phase === 'GAME_OVER' ? '終了' : `${currentTurn.toUpperCase()}`);
+            document.getElementById('turnIndicator').textContent = turnText;
             document.getElementById('p1Score').textContent = p1WonCards.length;
             document.getElementById('p2Score').textContent = p2WonCards.length;
 
@@ -621,8 +702,9 @@
             document.getElementById('p2CardCounts').textContent = `手札: ${p2Hand.length} | 伏せ: ${p2Facedown.length}`;
 
             // Active Zone Highlight
-            document.getElementById('p1Zone').classList.toggle('active-turn', currentTurn === 'p1' && phase === 'PLAYING');
-            document.getElementById('p2Zone').classList.toggle('active-turn', currentTurn === 'p2' && phase === 'PLAYING');
+            const activePlayer = (phase === 'RATE_SELECT' || phase === 'FIRST_PLAYER_SELECT' || phase === 'SETUP_FACEDOWN') ? setupSubPhase : currentTurn;
+            document.getElementById('p1Zone').classList.toggle('active-turn', activePlayer === 'p1' && phase !== 'GAME_OVER');
+            document.getElementById('p2Zone').classList.toggle('active-turn', activePlayer === 'p2' && phase !== 'GAME_OVER');
 
             // Render Hands & Guard Cards
             renderPlayerArea('p1');
@@ -645,16 +727,33 @@
             }
 
             // Controls Visibility
-            const controls = document.getElementById('actionControls');
-            if (phase === 'PLAYING' && (gameMode !== 'online' || currentTurn === myPlayerId)) {
-                controls.classList.remove('hidden');
+            const btnConfirm = document.getElementById('btnConfirmSelect');
+            const btnAttack = document.getElementById('btnAttack');
+            const btnFaceDown = document.getElementById('btnFaceDown');
+
+            if (phase === 'SETUP_FACEDOWN' && (gameMode !== 'online' || setupSubPhase === myPlayerId)) {
+                btnConfirm.classList.remove('hidden');
+                btnAttack.classList.add('hidden');
+                btnFaceDown.classList.add('hidden');
+            } else if (phase === 'PLAYING' && (gameMode !== 'online' || currentTurn === myPlayerId)) {
+                btnConfirm.classList.add('hidden');
+                btnAttack.classList.remove('hidden');
+                btnFaceDown.classList.remove('hidden');
             } else {
-                controls.classList.add('hidden');
+                btnConfirm.classList.add('hidden');
+                btnAttack.classList.add('hidden');
+                btnFaceDown.classList.add('hidden');
             }
+
+            // Prompt indicator
+            document.getElementById('tapPrompt').classList.toggle('hidden', !pendingNextStep);
         }
 
         function renderPlayerArea(p) {
-            const isMe = (gameMode === 'online') ? (p === myPlayerId) : (gameMode === 'local' ? (p === currentTurn) : (p === 'p1'));
+            const isSetupPhase = (phase === 'RATE_SELECT' || phase === 'FIRST_PLAYER_SELECT' || phase === 'SETUP_FACEDOWN');
+            const activeSub = isSetupPhase ? setupSubPhase : currentTurn;
+
+            const isMe = (gameMode === 'online') ? (p === myPlayerId) : (gameMode === 'local' ? (p === activeSub) : (p === 'p1'));
             const handContainer = document.getElementById(`${p}Hand`);
             const facedownContainer = document.getElementById(`${p}Facedown`);
 
@@ -663,12 +762,17 @@
 
             // Render Hand
             if (isMe || phase === 'GAME_OVER') {
-                handContainer.innerHTML = handCards.map(c => 
-                    renderCard(c, {
-                        isSelected: selectedHandCardId === c.id,
+                handContainer.innerHTML = handCards.map(c => {
+                    const isSelected = selectedHandCardIds.includes(c.id);
+                    // Disallow JOKER for Rate, First-Player, or Facedown actions!
+                    const isJokerDisallowed = (c.num === 99) && (phase === 'RATE_SELECT' || phase === 'FIRST_PLAYER_SELECT' || phase === 'SETUP_FACEDOWN');
+
+                    return renderCard(c, {
+                        isSelected: isSelected,
+                        isDisabled: isJokerDisallowed,
                         onClick: `selectHandCard('${p}', ${c.id})`
-                    })
-                ).join('');
+                    });
+                }).join('');
             } else {
                 handContainer.innerHTML = handCards.map(() => renderCard(null, { isFacedown: true })).join('');
             }
@@ -692,13 +796,25 @@
             }).join('');
         }
 
-        function setMessage(msg) {
-            document.getElementById('messageBox').innerHTML = msg;
+        function setMessage(msg, nextCallback = null) {
+            document.getElementById('messageText').innerHTML = msg;
+            pendingNextStep = nextCallback;
+            updateUI();
+        }
+
+        function handleMessageClick() {
+            if (pendingNextStep) {
+                const cb = pendingNextStep;
+                pendingNextStep = null;
+                updateUI();
+                cb();
+            }
         }
 
         /* --- GAME LOGIC & FLOW --- */
         function startGame(mode) {
             gameMode = mode;
+            cpuLevel = document.getElementById('cpuLevelSelect').value;
             isGambleMode = document.getElementById('gambleModeToggle').checked;
             document.getElementById('menuModal').classList.add('hidden');
 
@@ -710,42 +826,64 @@
             p1Graveyard = []; p2Graveyard = [];
             p1RateCard = null; p2RateCard = null;
             p1FirstCard = null; p2FirstCard = null;
-            selectedHandCardId = null; selectedTargetGuardId = null;
+            selectedHandCardIds = []; selectedTargetGuardId = null;
+            gameLogs = [];
 
             playSound(440, 0.2);
+            addLog(`=== ゲーム開始 (モード: ${gameMode}, CPU難易度: ${cpuLevel}) ===`);
 
             if (isGambleMode) {
                 phase = 'RATE_SELECT';
-                setMessage('【レート札の選択】手札から1枚をレート札として出してください');
+                setupSubPhase = 'p1';
+                setMessage('【レート札の選択】P1: 手札から1枚をレート札として選んでタップしてください (JOKER不可)');
             } else {
                 phase = 'FIRST_PLAYER_SELECT';
-                setMessage('【先行決め】互いに手札から1枚出してください (大きい方が先行)');
+                setupSubPhase = 'p1';
+                setMessage('【先行決め】P1: 手札から先行決め札を1枚選んでタップしてください (JOKER不可)');
             }
 
             updateUI();
         }
 
         function selectHandCard(p, cardId) {
-            if (phase === 'PLAYING' && currentTurn !== p) return;
+            const isSetup = (phase === 'RATE_SELECT' || phase === 'FIRST_PLAYER_SELECT' || phase === 'SETUP_FACEDOWN');
+            const activeP = isSetup ? setupSubPhase : currentTurn;
+
+            if (p !== activeP) return;
             if (gameMode === 'online' && myPlayerId !== p) return;
 
-            if (selectedHandCardId === cardId) {
-                selectedHandCardId = null;
-            } else {
-                selectedHandCardId = cardId;
-            }
-            playSound(600, 0.05);
-            updateUI();
+            const hand = p === 'p1' ? p1Hand : p2Hand;
+            const card = hand.find(c => c.id === cardId);
 
-            // Handle Init Phase Selections directly
-            if (phase === 'RATE_SELECT' || phase === 'FIRST_PLAYER_SELECT') {
+            // JOKER restrictions
+            if ((phase === 'RATE_SELECT' || phase === 'FIRST_PLAYER_SELECT' || phase === 'SETUP_FACEDOWN') && card.num === 99) {
+                alert('JOKERはレート札・先行決め札・伏せカードに指定できません！');
+                return;
+            }
+
+            playSound(600, 0.05);
+
+            if (phase === 'SETUP_FACEDOWN') {
+                // Multi select up to 3 cards
+                if (selectedHandCardIds.includes(cardId)) {
+                    selectedHandCardIds = selectedHandCardIds.filter(id => id !== cardId);
+                } else {
+                    if (selectedHandCardIds.length < 3) {
+                        selectedHandCardIds.push(cardId);
+                    } else {
+                        alert('伏せカードは3枚まで選択できます。');
+                    }
+                }
+            } else {
+                // Single selection
+                selectedHandCardIds = [cardId];
                 processSetupSelection(p, cardId);
             }
+            updateUI();
         }
 
         function selectTargetGuard(p, guardId) {
             if (phase !== 'PLAYING') return;
-            // Target must belong to opponent!
             const opponent = currentTurn === 'p1' ? 'p2' : 'p1';
             if (p !== opponent) return;
 
@@ -759,77 +897,156 @@
         }
 
         function processSetupSelection(p, cardId) {
-            if (gameMode === 'online' && p !== myPlayerId) return;
-
             if (phase === 'RATE_SELECT') {
                 if (p === 'p1') {
                     p1RateCard = removeCardFromHand(p1Hand, cardId);
+                    addLog('P1がレート札を選択しました（非公開）');
+                    if (gameMode === 'cpu') {
+                        const valid = p2Hand.filter(c => c.num !== 99);
+                        const choice = valid[Math.floor(Math.random() * valid.length)];
+                        p2RateCard = removeCardFromHand(p2Hand, choice.id);
+                        addLog('CPU(P2)がレート札を選択しました（非公開）');
+                        phase = 'FIRST_PLAYER_SELECT';
+                        setupSubPhase = 'p1';
+                        selectedHandCardIds = [];
+                        setMessage('【先行決め】P1: 先行決め札を1枚選んでタップしてください');
+                    } else if (gameMode === 'local') {
+                        setupSubPhase = 'p2';
+                        selectedHandCardIds = [];
+                        showPrivacyScreen('PLAYER 2 さんの番です (レート札を選択)');
+                    }
                 } else {
                     p2RateCard = removeCardFromHand(p2Hand, cardId);
-                }
-
-                if (gameMode === 'cpu' && !p2RateCard) {
-                    // CPU auto select rate card (random non-joker)
-                    const valid = p2Hand.filter(c => c.num !== 99);
-                    const choice = valid[Math.floor(Math.random() * valid.length)];
-                    p2RateCard = removeCardFromHand(p2Hand, choice.id);
-                }
-
-                if (gameMode === 'online') {
-                    sendOnlineAction({ type: 'SET_RATE', cardId: cardId });
-                }
-
-                if (p1RateCard && p2RateCard) {
+                    addLog('P2がレート札を選択しました（非公開）');
                     phase = 'FIRST_PLAYER_SELECT';
-                    setMessage('【先行決め】互いに手札から1枚出してください');
-                } else if (gameMode === 'local') {
-                    showPrivacyScreen(`PLAYER 2 さんの番です (レート札を選択)`);
+                    setupSubPhase = 'p1';
+                    selectedHandCardIds = [];
+                    setMessage('【先行決め】P1: 先行決め札を1枚選んでタップしてください');
                 }
             } else if (phase === 'FIRST_PLAYER_SELECT') {
                 if (p === 'p1') {
                     p1FirstCard = removeCardFromHand(p1Hand, cardId);
+                    addLog(`P1が先行決め札を出しました`);
+                    if (gameMode === 'cpu') {
+                        const valid = p2Hand.filter(c => c.num !== 99);
+                        const choice = valid[Math.floor(Math.random() * valid.length)];
+                        p2FirstCard = removeCardFromHand(p2Hand, choice.id);
+                        addLog(`CPU(P2)が先行決め札を出しました`);
+                        determineFirstPlayer();
+                    } else if (gameMode === 'local') {
+                        setupSubPhase = 'p2';
+                        selectedHandCardIds = [];
+                        showPrivacyScreen('PLAYER 2 さんの番です (先行決め札を選択)');
+                    }
                 } else {
                     p2FirstCard = removeCardFromHand(p2Hand, cardId);
+                    addLog(`P2が先行決め札を出しました`);
+                    determineFirstPlayer();
                 }
+            }
+        }
 
-                if (gameMode === 'cpu' && !p2FirstCard) {
-                    const choice = p2Hand[Math.floor(Math.random() * p2Hand.length)];
-                    p2FirstCard = removeCardFromHand(p2Hand, choice.id);
+        function determineFirstPlayer() {
+            p1Graveyard.push({ card: p1FirstCard, reason: '先行決め対戦', turn: 0 });
+            p2Graveyard.push({ card: p2FirstCard, reason: '先行決め対戦', turn: 0 });
+
+            let p1Val = p1FirstCard.num;
+            let p2Val = p2FirstCard.num;
+
+            let resultMsg = `先行決め: P1(${p1Val}) vs P2(${p2Val}) ➔ `;
+
+            if (p1Val > p2Val) {
+                currentTurn = 'p1';
+                resultMsg += '【PLAYER 1 先行】';
+            } else if (p2Val > p1Val) {
+                currentTurn = 'p2';
+                resultMsg += '【PLAYER 2 先行】';
+            } else {
+                currentTurn = Math.random() < 0.5 ? 'p1' : 'p2';
+                resultMsg += `引き分けのためランダムで 【${currentTurn.toUpperCase()} 先行】`;
+            }
+
+            addLog(resultMsg);
+
+            // Move to Setup Facedown Phase (3 cards each)
+            phase = 'SETUP_FACEDOWN';
+            setupSubPhase = currentTurn; // First player sets first
+            selectedHandCardIds = [];
+
+            setMessage(`${resultMsg}<br>【初期ガード設定】手札からガードとして伏せるカードを【3枚】選んで「確定する」を押してください`, () => {
+                if (gameMode === 'cpu' && setupSubPhase === 'p2') {
+                    executeCpuSetupFacedown();
                 }
+            });
+        }
 
-                if (gameMode === 'online') {
-                    sendOnlineAction({ type: 'SET_FIRST', cardId: cardId });
-                }
+        function handleConfirmSetupSelection() {
+            if (phase !== 'SETUP_FACEDOWN') return;
 
-                if (p1FirstCard && p2FirstCard) {
-                    // Determine First Player
-                    p1Graveyard.push(p1FirstCard);
-                    p2Graveyard.push(p2FirstCard);
+            if (selectedHandCardIds.length !== 3) {
+                alert('必ず3枚のカードを選択してください！');
+                return;
+            }
 
-                    let p1Val = p1FirstCard.num;
-                    let p2Val = p2FirstCard.num;
+            const p = setupSubPhase;
+            const hand = p === 'p1' ? p1Hand : p2Hand;
+            const facedown = p === 'p1' ? p1Facedown : p2Facedown;
 
-                    if (p1Val > p2Val) {
-                        currentTurn = 'p1';
-                        setMessage(`先行決め: P1(${p1Val}) vs P2(${p2Val}) ➔ 【PLAYER 1 先行】`);
-                    } else if (p2Val > p1Val) {
-                        currentTurn = 'p2';
-                        setMessage(`先行決め: P1(${p1Val}) vs P2(${p2Val}) ➔ 【PLAYER 2 先行】`);
-                    } else {
-                        // Draw -> random
-                        currentTurn = Math.random() < 0.5 ? 'p1' : 'p2';
-                        setMessage(`先行決め: 引き分け ➔ ランダムで【${currentTurn.toUpperCase()} 先行】`);
-                    }
+            // Remove selected cards and put into facedown
+            selectedHandCardIds.forEach(id => {
+                const card = removeCardFromHand(hand, id);
+                facedown.push({ ...card, isFaceUp: false });
+            });
 
-                    phase = 'PLAYING';
-                    selectedHandCardId = null;
+            addLog(`${p.toUpperCase()}が初期ガード3枚を伏せました`);
+            selectedHandCardIds = [];
 
-                    if (gameMode === 'cpu' && currentTurn === 'p2') {
-                        setTimeout(executeCpuTurn, 1000);
-                    }
+            const secondPlayer = currentTurn === 'p1' ? 'p2' : 'p1';
+
+            if (setupSubPhase === currentTurn) {
+                // Switch to second player for setup
+                setupSubPhase = secondPlayer;
+                if (gameMode === 'cpu' && setupSubPhase === 'p2') {
+                    executeCpuSetupFacedown();
                 } else if (gameMode === 'local') {
-                    showPrivacyScreen(`PLAYER 2 さんの番です (先行決め札を選択)`);
+                    showPrivacyScreen(`${secondPlayer.toUpperCase()} さんの番です (初期カード3枚を伏せる)`);
+                } else {
+                    setMessage(`【初期ガード設定】${secondPlayer.toUpperCase()} さんの番です。手札から3枚選んで「確定する」を押してください`);
                 }
+            } else {
+                // Both finished setup -> Start Playing
+                phase = 'PLAYING';
+                setMessage(`初期カードの設定が完了しました！【${currentTurn.toUpperCase()}】の攻撃ターンです。`, () => {
+                    if (gameMode === 'cpu' && currentTurn === 'p2') {
+                        executeCpuTurn();
+                    }
+                });
+            }
+            updateUI();
+        }
+
+        function executeCpuSetupFacedown() {
+            // CPU selects 3 non-joker cards
+            const validCards = p2Hand.filter(c => c.num !== 99);
+            // Sort by middle numbers
+            validCards.sort((a,b) => a.num - b.num);
+            const chosen = validCards.slice(0, 3);
+
+            chosen.forEach(c => {
+                const card = removeCardFromHand(p2Hand, c.id);
+                p2Facedown.push({ ...card, isFaceUp: false });
+            });
+
+            addLog('CPU(P2)が初期ガード3枚を伏せました');
+
+            if (setupSubPhase === currentTurn) {
+                setupSubPhase = 'p1';
+                setMessage('【初期ガード設定】P1: 手札から3枚選んで「確定する」を押してください');
+            } else {
+                phase = 'PLAYING';
+                setMessage(`初期カードの設定が完了しました！【${currentTurn.toUpperCase()}】の攻撃ターンです。`, () => {
+                    if (currentTurn === 'p2') executeCpuTurn();
+                });
             }
             updateUI();
         }
@@ -837,38 +1054,38 @@
         /* --- TURN ACTIONS --- */
         function handleSetFacedownAction() {
             if (phase !== 'PLAYING') return;
-            if (!selectedHandCardId) {
+            if (selectedHandCardIds.length !== 1) {
                 alert('伏せる手札を1枚選択してください。');
                 return;
             }
 
+            const cardId = selectedHandCardIds[0];
             const hand = currentTurn === 'p1' ? p1Hand : p2Hand;
             const facedown = currentTurn === 'p1' ? p1Facedown : p2Facedown;
 
-            const card = removeCardFromHand(hand, selectedHandCardId);
+            const card = hand.find(c => c.id === cardId);
             if (card.num === 99) {
                 alert('JOKERは伏せることができません！');
-                hand.push(card);
                 return;
             }
 
+            removeCardFromHand(hand, cardId);
             facedown.push({ ...card, isFaceUp: false });
             playSound(500, 0.15);
 
-            if (gameMode === 'online' && currentTurn === myPlayerId) {
-                sendOnlineAction({ type: 'ACTION_FACEDOWN', cardId: selectedHandCardId });
-            }
-
-            endTurn(`【${currentTurn.toUpperCase()}】カードを1枚伏せました。`);
+            const msg = `【${currentTurn.toUpperCase()}】カードを1枚伏せました。`;
+            addLog(msg);
+            endTurn(msg);
         }
 
         function handleAttackAction() {
             if (phase !== 'PLAYING') return;
-            if (!selectedHandCardId) {
-                alert('攻撃に出す手札を選択してください。');
+            if (selectedHandCardIds.length !== 1) {
+                alert('攻撃に出す手札を1枚選択してください。');
                 return;
             }
 
+            const attackCardId = selectedHandCardIds[0];
             const opponent = currentTurn === 'p1' ? 'p2' : 'p1';
             const oppFacedown = opponent === 'p1' ? p1Facedown : p2Facedown;
 
@@ -882,17 +1099,15 @@
             const oppGraveyard = opponent === 'p1' ? p1Graveyard : p2Graveyard;
             const myWonCards = currentTurn === 'p1' ? p1WonCards : p2WonCards;
 
-            const attackCard = removeCardFromHand(myHand, selectedHandCardId);
-
-            if (gameMode === 'online' && currentTurn === myPlayerId) {
-                sendOnlineAction({ type: 'ACTION_ATTACK', cardId: selectedHandCardId, targetId: selectedTargetGuardId });
-            }
+            const attackCard = removeCardFromHand(myHand, attackCardId);
 
             // Direct Attack when opponent has no guards
             if (oppFacedown.length === 0) {
                 playSound(800, 0.3, 'square');
                 myWonCards.push(attackCard);
-                endTurn(`【直接攻撃成功！】相手にガードが無いため ${attackCard.num} を勝ち札にしました。`);
+                const msg = `【直接攻撃成功！】${currentTurn.toUpperCase()} 相手ガードなしのため ${attackCard.num} を勝ち札に！`;
+                addLog(msg);
+                endTurn(msg);
                 return;
             }
 
@@ -905,29 +1120,34 @@
             let myVal = attackCard.num;
             let oppVal = guardCard.num;
 
+            let logText = `攻撃対決: 【${currentTurn.toUpperCase()}】(${myVal}) vs 【${opponent.toUpperCase()}】(${oppVal}) ➔ `;
+
             if (myVal > oppVal) {
                 // ATTACK SUCCESS
-                oppFacedown.splice(guardIdx, 1); // remove guard
-                oppGraveyard.push(guardCard);
+                oppFacedown.splice(guardIdx, 1);
+                oppGraveyard.push({ card: guardCard, reason: `相手(${currentTurn.toUpperCase()})の攻撃により破壊`, turn: gameLogs.length });
                 myWonCards.push(attackCard);
 
                 // Penalty: Opponent discards (14 - winningNum)
                 const penaltyVal = 14 - attackCard.num;
-                const penaltyResultMsg = applyPenalty(opponent, penaltyVal);
+                const penaltyMsg = applyPenalty(opponent, penaltyVal);
 
-                endTurn(`【攻撃成功！】${myVal} vs ${oppVal} ➔ 相手カード撃破！ ${penaltyResultMsg}`);
+                logText += `攻撃成功！相手カード破壊！ ${penaltyMsg}`;
             } else if (myVal < oppVal) {
                 // ATTACK FAIL
-                guardCard.isFaceUp = true; // Face up forever
-                myGraveyard.push(attackCard);
-                endTurn(`【攻撃失敗...】${myVal} vs ${oppVal} ➔ 自分のカードは墓地へ。相手ガードは表向きになりました。`);
+                guardCard.isFaceUp = true; // Stay face up
+                myGraveyard.push({ card: attackCard, reason: `攻撃失敗により返り討ち`, turn: gameLogs.length });
+                logText += `攻撃失敗... ガードは表向きとして残ります。`;
             } else {
                 // DRAW
                 oppFacedown.splice(guardIdx, 1);
-                oppGraveyard.push(guardCard);
-                myGraveyard.push(attackCard);
-                endTurn(`【引き分け】${myVal} vs ${oppVal} ➔ 両者とも墓地へ。`);
+                oppGraveyard.push({ card: guardCard, reason: `引き分けにより相打ち`, turn: gameLogs.length });
+                myGraveyard.push({ card: attackCard, reason: `引き分けにより相打ち`, turn: gameLogs.length });
+                logText += `引き分け！両者のカードが墓地へ。`;
             }
+
+            addLog(logText);
+            endTurn(logText);
         }
 
         function applyPenalty(targetPlayer, penaltyNum) {
@@ -938,41 +1158,42 @@
             let hIdx = hand.findIndex(c => c.num === penaltyNum);
             if (hIdx !== -1) {
                 const discarded = hand.splice(hIdx, 1)[0];
-                graveyard.push(discarded);
-                return `ペナルティ: 手札から ${penaltyNum} を墓地へ捨てました。`;
+                graveyard.push({ card: discarded, reason: `ペナルティ(${penaltyNum}) 手札から破棄`, turn: gameLogs.length });
+                return `ペナルティ: 手札から ${penaltyNum} を破棄！`;
             }
 
             let fIdx = facedown.findIndex(c => c.num === penaltyNum);
             if (fIdx !== -1) {
                 const discarded = facedown.splice(fIdx, 1)[0];
-                graveyard.push(discarded);
-                return `ペナルティ: 伏せ場から ${penaltyNum} を墓地へ捨てました。`;
+                graveyard.push({ card: discarded, reason: `ペナルティ(${penaltyNum}) 伏せ場から破棄`, turn: gameLogs.length });
+                return `ペナルティ: 伏せ場から ${penaltyNum} を破棄！`;
             }
 
-            return `ペナルティ: ${penaltyNum} を持っていなかったため破棄なし。`;
+            return `ペナルティ(${penaltyNum})に該当するカード無し。`;
         }
 
-        function endTurn(logMsg) {
-            selectedHandCardId = null;
+        function endTurn(lastLog) {
+            selectedHandCardIds = [];
             selectedTargetGuardId = null;
 
             // Check Game Over
             if (p1Hand.length === 0 && p2Hand.length === 0) {
-                finishGame(logMsg);
+                finishGame(lastLog);
                 return;
             }
 
-            // Switch Turn
-            currentTurn = currentTurn === 'p1' ? 'p2' : 'p1';
-            setMessage(`${logMsg} 次は 【${currentTurn.toUpperCase()}】 のターンです。`);
+            const nextTurn = currentTurn === 'p1' ? 'p2' : 'p1';
 
-            updateUI();
+            setMessage(`${lastLog}<br>▶ 【タップ】して ${nextTurn.toUpperCase()} のターンへ`, () => {
+                currentTurn = nextTurn;
+                updateUI();
 
-            if (gameMode === 'local') {
-                showPrivacyScreen(`次は ${currentTurn.toUpperCase()} さんのターンです`);
-            } else if (gameMode === 'cpu' && currentTurn === 'p2') {
-                setTimeout(executeCpuTurn, 1200);
-            }
+                if (gameMode === 'local') {
+                    showPrivacyScreen(`次は ${currentTurn.toUpperCase()} さんのターンです`);
+                } else if (gameMode === 'cpu' && currentTurn === 'p2') {
+                    executeCpuTurn();
+                }
+            });
         }
 
         function finishGame(lastMsg) {
@@ -980,8 +1201,8 @@
 
             // Reveal Rate Cards & Move to Graveyard if gamble mode
             if (isGambleMode && p1RateCard && p2RateCard) {
-                p1Graveyard.push(p1RateCard);
-                p2Graveyard.push(p2RateCard);
+                p1Graveyard.push({ card: p1RateCard, reason: 'レート札 (ゲーム終了公開)', turn: '最終' });
+                p2Graveyard.push({ card: p2RateCard, reason: 'レート札 (ゲーム終了公開)', turn: '最終' });
             }
 
             let winner = null;
@@ -997,7 +1218,7 @@
                 winner = 'p2';
                 resultDetail = `勝ち札枚数: P1(${p1Count}枚) vs P2(${p2Count}枚)`;
             } else {
-                // Count Tie-Breaker: Sum of winning cards (Lower wins)
+                // Sum tie breaker
                 const p1Sum = p1WonCards.reduce((a,c) => a + (c.num === 99 ? 0 : c.num), 0);
                 const p2Sum = p2WonCards.reduce((a,c) => a + (c.num === 99 ? 0 : c.num), 0);
 
@@ -1013,7 +1234,7 @@
                         resultDetail = `枚数同数 ➔ 数字合計の小さい方が勝ち: P1(${p1Sum}) vs P2(${p2Sum})`;
                     } else {
                         winner = 'draw';
-                        resultDetail = `枚数・合計ともに同点!`;
+                        resultDetail = `枚数・合計ともに完全同点!`;
                     }
                 }
             }
@@ -1023,59 +1244,138 @@
                 if (winner === 'p1' || winner === 'p2') {
                     const winnerRateCard = winner === 'p1' ? p1RateCard : p2RateCard;
                     let rateVal = winnerRateCard.num;
-                    if (rateVal >= 11 || rateVal === 99) rateVal = 10; // JQK/Joker = 10
+                    if (rateVal >= 11 || rateVal === 99) rateVal = 10;
 
                     const diff = Math.abs(p1Count - p2Count);
                     const payout = diff * rateVal;
-                    scoreCalcText = `<br>💰 勝者レート札: ${rateVal} × 差分${diff}枚 ➔ 獲得スコア: 【${payout} 倍】`;
+                    scoreCalcText = `<br>💰 勝者レート札: ${rateVal} × 差分${diff}枚 ➔ 獲得倍率: 【${payout} 倍】`;
                 }
             }
 
             const winText = winner === 'p1' ? '🎉 PLAYER 1 の勝利！' : winner === 'p2' ? '🎉 PLAYER 2 の勝利！' : '🤝 引き分け！';
-            setMessage(`${lastMsg}<br><strong>${winText}</strong><br>${resultDetail}${scoreCalcText}`);
+            const finalMessage = `${lastMsg}<br><br><strong>${winText}</strong><br>${resultDetail}${scoreCalcText}`;
+
+            addLog(`=== ゲーム終了: ${winText} ===`);
+            setMessage(finalMessage);
 
             playSound(winner === 'draw' ? 300 : 900, 0.5);
             updateUI();
         }
 
-        /* --- CPU AI LOGIC --- */
+        /* --- CPU AI LOGIC (3 LEVELS) --- */
         function executeCpuTurn() {
             if (phase !== 'PLAYING' || currentTurn !== 'p2') return;
 
-            // Simple Smart AI
             const cpuHand = p2Hand;
             const p1Guard = p1Facedown;
 
-            // Decide to attack or set facedown
-            if (p1Guard.length === 0 || (cpuHand.length > 2 && Math.random() < 0.4)) {
-                // Action: Set Facedown (Guard)
+            if (cpuHand.length === 0) return;
+
+            if (cpuLevel === 'easy') {
+                // EASY: Completely Random
+                if (p1Guard.length === 0 || Math.random() < 0.5) {
+                    // Try to set facedown if available (non joker)
+                    const nonJokers = cpuHand.filter(c => c.num !== 99);
+                    if (nonJokers.length > 0) {
+                        const randomCard = nonJokers[Math.floor(Math.random() * nonJokers.length)];
+                        selectedHandCardIds = [randomCard.id];
+                        handleSetFacedownAction();
+                        return;
+                    }
+                }
+                // Random attack
+                const randomAttack = cpuHand[Math.floor(Math.random() * cpuHand.length)];
+                selectedHandCardIds = [randomAttack.id];
+                if (p1Guard.length > 0) {
+                    const randomTarget = p1Guard[Math.floor(Math.random() * p1Guard.length)];
+                    selectedTargetGuardId = randomTarget.id;
+                }
+                handleAttackAction();
+
+            } else if (cpuLevel === 'normal') {
+                // NORMAL: Basic Strategy
+                if (p1Guard.length === 0) {
+                    // Direct Attack with highest
+                    const sorted = [...cpuHand].sort((a,b) => b.num - a.num);
+                    selectedHandCardIds = [sorted[0].id];
+                    handleAttackAction();
+                    return;
+                }
+
+                // Look for known face-up guards to beat
+                const faceUpGuards = p1Guard.filter(g => g.isFaceUp);
+                if (faceUpGuards.length > 0) {
+                    for (let g of faceUpGuards) {
+                        const winningCard = cpuHand.find(c => c.num > g.num);
+                        if (winningCard) {
+                            selectedHandCardIds = [winningCard.id];
+                            selectedTargetGuardId = g.id;
+                            handleAttackAction();
+                            return;
+                        }
+                    }
+                }
+
+                // Otherwise set facedown if low card or attack random
                 const nonJokers = cpuHand.filter(c => c.num !== 99);
-                if (nonJokers.length > 0) {
-                    // Choose middle/low card to guard
+                if (nonJokers.length > 0 && Math.random() < 0.4) {
                     nonJokers.sort((a,b) => a.num - b.num);
-                    const cardToSet = nonJokers[0];
-                    selectedHandCardId = cardToSet.id;
+                    selectedHandCardIds = [nonJokers[0].id];
                     handleSetFacedownAction();
                     return;
                 }
-            }
 
-            // Action: Attack
-            // Pick highest card in hand
-            const sortedHand = [...cpuHand].sort((a,b) => b.num - a.num);
-            const attackCard = sortedHand[0];
-            selectedHandCardId = attackCard.id;
+                const sorted = [...cpuHand].sort((a,b) => b.num - a.num);
+                selectedHandCardIds = [sorted[0].id];
+                selectedTargetGuardId = p1Guard[Math.floor(Math.random() * p1Guard.length)].id;
+                handleAttackAction();
 
-            if (p1Guard.length > 0) {
-                // Target a known face-up card if we can beat it, otherwise random
-                let target = p1Guard.find(g => g.isFaceUp && attackCard.num > g.num);
-                if (!target) {
-                    target = p1Guard[Math.floor(Math.random() * p1Guard.length)];
+            } else {
+                // HARD: Advanced Strategy
+                if (p1Guard.length === 0) {
+                    // Direct attack with highest
+                    const sorted = [...cpuHand].sort((a,b) => b.num - a.num);
+                    selectedHandCardIds = [sorted[0].id];
+                    handleAttackAction();
+                    return;
                 }
-                selectedTargetGuardId = target.id;
-            }
 
-            handleAttackAction();
+                // Check face up guards -> Beat with SMALLEST possible winning card
+                const faceUpGuards = p1Guard.filter(g => g.isFaceUp);
+                if (faceUpGuards.length > 0) {
+                    for (let g of faceUpGuards) {
+                        const candidates = cpuHand.filter(c => c.num > g.num).sort((a,b) => a.num - b.num);
+                        if (candidates.length > 0) {
+                            selectedHandCardIds = [candidates[0].id];
+                            selectedTargetGuardId = g.id;
+                            handleAttackAction();
+                            return;
+                        }
+                    }
+                }
+
+                // If high probability of winning, attack unknown card with Joker or 13/K
+                const highCard = cpuHand.find(c => c.num === 99 || c.num >= 12);
+                if (highCard && p1Guard.length > 0) {
+                    selectedHandCardIds = [highCard.id];
+                    selectedTargetGuardId = p1Guard[Math.floor(Math.random() * p1Guard.length)].id;
+                    handleAttackAction();
+                    return;
+                }
+
+                // Guard low card
+                const nonJokers = cpuHand.filter(c => c.num !== 99).sort((a,b) => a.num - b.num);
+                if (nonJokers.length > 0) {
+                    selectedHandCardIds = [nonJokers[0].id];
+                    handleSetFacedownAction();
+                    return;
+                }
+
+                // Fallback attack
+                selectedHandCardIds = [cpuHand[0].id];
+                selectedTargetGuardId = p1Guard[0].id;
+                handleAttackAction();
+            }
         }
 
         /* --- HELPER FUNCTIONS --- */
@@ -1093,13 +1393,30 @@
             document.getElementById('privacyScreen').classList.add('hidden');
         }
 
-        /* --- GRAVEYARD MODAL --- */
+        /* --- MODALS LOGIC --- */
         function openGraveyardModal() {
             const p1Box = document.getElementById('p1GraveyardList');
             const p2Box = document.getElementById('p2GraveyardList');
 
-            p1Box.innerHTML = p1Graveyard.map(c => renderCard(c)).join('');
-            p2Box.innerHTML = p2Graveyard.map(c => renderCard(c)).join('');
+            p1Box.innerHTML = p1Graveyard.length === 0 ? '<p style="color:#aaa; font-size:0.8rem;">なし</p>' : p1Graveyard.map(item => `
+                <div class="graveyard-item">
+                    ${renderCard(item.card)}
+                    <div class="graveyard-reason">
+                        <div><strong>${item.card.num === 99 ? 'JOKER' : item.card.num} (${item.card.suit})</strong></div>
+                        <div>理由: ${item.reason}</div>
+                    </div>
+                </div>
+            `).join('');
+
+            p2Box.innerHTML = p2Graveyard.length === 0 ? '<p style="color:#aaa; font-size:0.8rem;">なし</p>' : p2Graveyard.map(item => `
+                <div class="graveyard-item">
+                    ${renderCard(item.card)}
+                    <div class="graveyard-reason">
+                        <div><strong>${item.card.num === 99 ? 'JOKER' : item.card.num} (${item.card.suit})</strong></div>
+                        <div>理由: ${item.reason}</div>
+                    </div>
+                </div>
+            `).join('');
 
             document.getElementById('graveyardModal').classList.remove('hidden');
         }
@@ -1108,7 +1425,19 @@
             document.getElementById('graveyardModal').classList.add('hidden');
         }
 
-        /* --- PEERJS ONLINE MULTIPLAYER --- */
+        function openLogModal() {
+            const logBox = document.getElementById('logList');
+            logBox.innerHTML = gameLogs.length === 0 ? '<p style="color:#aaa;">ログはまだありません。</p>' : gameLogs.map((log, i) => `
+                <div class="log-item">#${i+1} ${log}</div>
+            `).join('');
+            document.getElementById('logModal').classList.remove('hidden');
+        }
+
+        function closeLogModal() {
+            document.getElementById('logModal').classList.add('hidden');
+        }
+
+        /* --- ONLINE PEERJS MULTIPLAYER --- */
         function openOnlineSetup() {
             document.getElementById('onlineModal').classList.remove('hidden');
         }
@@ -1177,27 +1506,6 @@
             peerConn.on('close', () => {
                 alert('対戦相手の通信が切断されました。');
             });
-        }
-
-        function sendOnlineAction(actionData) {
-            if (peerConn && peerConn.open) {
-                peerConn.send(actionData);
-            }
-        }
-
-        function handleRemoteAction(data) {
-            const remotePlayer = myPlayerId === 'p1' ? 'p2' : 'p1';
-            
-            if (data.type === 'SET_RATE' || data.type === 'SET_FIRST') {
-                processSetupSelection(remotePlayer, data.cardId);
-            } else if (data.type === 'ACTION_FACEDOWN') {
-                selectedHandCardId = data.cardId;
-                handleSetFacedownAction();
-            } else if (data.type === 'ACTION_ATTACK') {
-                selectedHandCardId = data.cardId;
-                selectedTargetGuardId = data.targetId;
-                handleAttackAction();
-            }
         }
 
         // Initialize UI
