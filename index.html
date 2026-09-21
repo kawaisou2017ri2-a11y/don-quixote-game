@@ -12,15 +12,15 @@
             --felt-color: #124d2a;
             --accent-gold: #e6c619;
             --text-light: #f5f5f7;
-            --card-w: 64px;
-            --card-h: 92px;
+            --card-w: 60px;
+            --card-h: 86px;
             --card-radius: 6px;
         }
 
         @media (min-width: 600px) {
             :root {
-                --card-w: 75px;
-                --card-h: 108px;
+                --card-w: 72px;
+                --card-h: 102px;
             }
         }
 
@@ -44,7 +44,7 @@
 
         header {
             background: rgba(0,0,0,0.6);
-            padding: 8px 16px;
+            padding: 8px 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -99,11 +99,11 @@
         .message-box {
             background: rgba(0, 0, 0, 0.85);
             color: var(--accent-gold);
-            padding: 12px;
+            padding: 10px;
             text-align: center;
             border-radius: 8px;
             font-weight: bold;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             border: 2px solid var(--accent-gold);
             min-height: 54px;
             display: flex;
@@ -141,7 +141,7 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            gap: 12px;
+            gap: 8px;
         }
 
         .player-zone {
@@ -150,7 +150,7 @@
             padding: 8px;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 6px;
             border: 1px solid rgba(255,255,255,0.05);
             transition: border-color 0.3s;
         }
@@ -170,10 +170,12 @@
 
         .cards-row {
             display: flex;
-            gap: 6px;
+            gap: 4px;
             flex-wrap: wrap;
-            min-height: calc(var(--card-h) + 8px);
+            min-height: calc(var(--card-h) + 6px);
             align-items: center;
+            overflow-x: auto;
+            padding-bottom: 2px;
         }
 
         .section-label {
@@ -200,6 +202,7 @@
             transition: transform 0.15s, box-shadow 0.15s, border 0.15s;
             position: relative;
             user-select: none;
+            flex-shrink: 0;
         }
 
         .card:hover:not(.disabled) {
@@ -212,12 +215,12 @@
         .card.joker { color: #7c3aed; }
 
         .card-corner {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             line-height: 1;
         }
 
         .card-center {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             align-self: center;
         }
 
@@ -228,7 +231,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
         }
 
         .card-back.rate-card-back {
@@ -250,28 +253,47 @@
             border: 2px solid #10b981;
         }
 
-        /* Center Arena */
+        /* Center Arena (Vertical Top/Bottom Layout) */
         .center-arena {
             background: rgba(0,0,0,0.4);
             border-radius: 12px;
-            padding: 10px;
+            padding: 8px 12px;
             display: flex;
             justify-content: space-around;
             align-items: center;
-            min-height: 110px;
+            min-height: 130px;
             border: 1px dashed rgba(255,255,255,0.2);
+        }
+
+        .battle-column {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
         }
 
         .arena-slot {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 4px;
+            gap: 2px;
         }
 
         .slot-title {
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             color: #ccc;
+        }
+
+        .empty-slot {
+            width: var(--card-w);
+            height: var(--card-h);
+            border: 1.5px dashed rgba(255,255,255,0.2);
+            border-radius: var(--card-radius);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.75rem;
+            color: #666;
         }
 
         /* Buttons & Controls */
@@ -341,6 +363,13 @@
             font-size: 0.9rem;
         }
 
+        .cards-list-horizontal {
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            padding: 4px 0;
+        }
+
         .graveyard-item {
             display: flex;
             align-items: center;
@@ -407,7 +436,7 @@
         <h1>ドン・キホーテ</h1>
         <div class="header-btns">
             <button class="btn btn-secondary" onclick="openLogModal()" style="padding: 4px 8px; font-size:0.75rem;">📜 ログ</button>
-            <button class="btn btn-secondary" onclick="openGraveyardModal()" style="padding: 4px 8px; font-size:0.75rem;">🪦 墓地</button>
+            <button class="btn btn-secondary" onclick="openGraveyardModal()" style="padding: 4px 8px; font-size:0.75rem;">🪦 墓地・勝ち札</button>
             <div id="modeBadge" class="mode-badge">メニュー</div>
         </div>
     </header>
@@ -419,10 +448,10 @@
             <div>勝ち札 P1: <span id="p1Score">0</span>枚 | P2: <span id="p2Score">0</span>枚</div>
         </div>
 
-        <!-- Banner Message (Clickable for Next Step) -->
-        <div id="messageBox" class="message-box" onclick="handleMessageClick()">
+        <!-- Banner Message -->
+        <div id="messageBox" class="message-box">
             <div id="messageText">モードを選択してください</div>
-            <div id="tapPrompt" class="tap-prompt hidden">▶ タップして進む</div>
+            <div id="tapPrompt" class="tap-prompt hidden">▶ 画面のどこかをタップして進む</div>
         </div>
 
         <!-- Main Game Field -->
@@ -437,37 +466,43 @@
                 <div class="section-label">伏せカード (ガード)</div>
                 <div id="p2Facedown" class="cards-row"></div>
 
-                <div class="section-label">手札</div>
+                <div class="section-label">手札 (可視化)</div>
                 <div id="p2Hand" class="cards-row"></div>
             </div>
 
-            <!-- Center Battle Arena -->
+            <!-- Center Battle Arena (Top: P2 / Bottom: P1) -->
             <div class="center-arena">
-                <div class="arena-slot">
-                    <span class="slot-title">攻撃カード</span>
-                    <div id="attackSlot"></div>
-                </div>
-
-                <div style="font-weight: bold; color: var(--accent-gold); font-size: 1.2rem;">VS</div>
-
-                <div class="arena-slot">
-                    <span class="slot-title">対象ガード</span>
-                    <div id="targetSlot"></div>
-                </div>
-
+                <!-- Rate Slot Vertical -->
                 <div class="arena-slot" id="rateSlotContainer">
-                    <span class="slot-title">レート札 (裏)</span>
-                    <div id="rateSlot"></div>
+                    <span class="slot-title">レート札</span>
+                    <div id="rateSlot" style="display:flex; flex-direction:column; gap:4px;"></div>
+                </div>
+
+                <!-- Battle Alignment (P2 Top / P1 Bottom) -->
+                <div class="battle-column">
+                    <!-- P2 Card Slot -->
+                    <div class="arena-slot">
+                        <span class="slot-title" id="p2SlotLabel">P2 札</span>
+                        <div id="p2BattleSlot"><div class="empty-slot">なし</div></div>
+                    </div>
+
+                    <div style="font-weight: bold; color: var(--accent-gold); font-size: 0.9rem;">VS</div>
+
+                    <!-- P1 Card Slot -->
+                    <div class="arena-slot">
+                        <span class="slot-title" id="p1SlotLabel">P1 札</span>
+                        <div id="p1BattleSlot"><div class="empty-slot">なし</div></div>
+                    </div>
                 </div>
             </div>
 
             <!-- Player 1 Zone -->
             <div id="p1Zone" class="player-zone">
+                <div class="section-label">手札 (可視化)</div>
+                <div id="p1Hand" class="cards-row"></div>
+
                 <div class="section-label">伏せカード (ガード)</div>
                 <div id="p1Facedown" class="cards-row"></div>
-
-                <div class="section-label">手札</div>
-                <div id="p1Hand" class="cards-row"></div>
 
                 <div class="zone-header">
                     <span>PLAYER 1</span>
@@ -502,8 +537,8 @@
                     <label style="display:block; font-weight:bold; margin-bottom:4px;">🤖 CPU難易度:</label>
                     <select id="cpuLevelSelect">
                         <option value="easy">初級 (かんたん)</option>
-                        <option value="normal" selected>中級 (ふつう)</option>
-                        <option value="hard">上級 (つよい)</option>
+                        <option value="normal">中級 (ふつう)</option>
+                        <option value="hard" selected>上級 (つよい・攻撃的)</option>
                     </select>
                 </div>
 
@@ -562,19 +597,25 @@
         </div>
     </div>
 
-    <!-- Graveyard Modal -->
+    <!-- Graveyard & Won Cards Modal -->
     <div id="graveyardModal" class="modal-overlay hidden">
         <div class="modal">
-            <div class="modal-title">🪦 墓地履歴 (いつ・どうやって捨てられたか)</div>
+            <div class="modal-title">🪦 墓地 & 🏆 勝ち札 一覧</div>
             <div class="modal-content">
                 <div>
-                    <strong>P1 の墓地:</strong>
-                    <div id="p1GraveyardList" style="margin-top:6px;"></div>
+                    <strong style="color:var(--accent-gold);">【PLAYER 1】</strong>
+                    <div style="font-size:0.8rem; margin-top:4px;">🏆 勝ち札 (<span id="p1WonCount">0</span>枚):</div>
+                    <div id="p1WonList" class="cards-list-horizontal"></div>
+                    <div style="font-size:0.8rem; margin-top:6px;">🪦 墓地:</div>
+                    <div id="p1GraveyardList" style="margin-top:4px;"></div>
                 </div>
                 <hr style="border-color:#374151;">
                 <div>
-                    <strong>P2 の墓地:</strong>
-                    <div id="p2GraveyardList" style="margin-top:6px;"></div>
+                    <strong style="color:var(--accent-gold);">【PLAYER 2】</strong>
+                    <div style="font-size:0.8rem; margin-top:4px;">🏆 勝ち札 (<span id="p2WonCount">0</span>枚):</div>
+                    <div id="p2WonList" class="cards-list-horizontal"></div>
+                    <div style="font-size:0.8rem; margin-top:6px;">🪦 墓地:</div>
+                    <div id="p2GraveyardList" style="margin-top:4px;"></div>
                 </div>
                 <button class="btn btn-secondary" onclick="closeGraveyardModal()" style="margin-top:12px;">閉じる</button>
             </div>
@@ -584,7 +625,7 @@
     <!-- Battle Log Modal -->
     <div id="logModal" class="modal-overlay hidden">
         <div class="modal">
-            <div class="modal-title">📜 バトルログ (行動履歴)</div>
+            <div class="modal-title">📜 バトルログ (最新順)</div>
             <div class="modal-content">
                 <div id="logList" style="max-height: 60vh; overflow-y: auto;"></div>
                 <button class="btn btn-secondary" onclick="closeLogModal()" style="margin-top:12px;">閉じる</button>
@@ -611,32 +652,47 @@
             } catch(e){}
         }
 
+        /* --- HELPER FUNCTIONS --- */
+        function getCardName(num) {
+            if (num === 99) return 'JOKER';
+            if (num === 1) return 'A';
+            if (num === 11) return 'J';
+            if (num === 12) return 'Q';
+            if (num === 13) return 'K';
+            return String(num);
+        }
+
         /* --- GAME STATE --- */
         let gameMode = 'cpu'; // 'cpu', 'local', 'online'
-        let cpuLevel = 'normal'; // 'easy', 'normal', 'hard'
+        let cpuLevel = 'hard'; // 'easy', 'normal', 'hard'
         let isGambleMode = false;
-        let myPlayerId = 'p1'; // 'p1' or 'p2'
+        let myPlayerId = 'p1';
 
-        // Phases: INIT, RATE_SELECT, FIRST_PLAYER_SELECT, SETUP_FACEDOWN, PLAYING, GAME_OVER
+        // Phases: INIT, RATE_SELECT, FIRST_PLAYER_SELECT, SETUP_FACEDOWN, PLAYING, BATTLE_REVEAL, GAME_OVER
         let phase = 'INIT'; 
-        let currentTurn = 'p1'; // 'p1' or 'p2'
-        let setupSubPhase = 'p1'; // 'p1' then 'p2' for setup steps
+        let currentTurn = 'p1';
+        let setupSubPhase = 'p1';
+        let winnerPlayer = null;
         
         let p1Hand = [], p2Hand = [];
-        let p1Facedown = [], p2Facedown = []; // { id, num, suit, isFaceUp }
+        let p1Facedown = [], p2Facedown = [];
         let p1WonCards = [], p2WonCards = [];
-        let p1Graveyard = [], p2Graveyard = []; // { card, reason, turn }
+        let p1Graveyard = [], p2Graveyard = [];
 
         let p1RateCard = null, p2RateCard = null;
         let p1FirstCard = null, p2FirstCard = null;
 
-        let selectedHandCardIds = []; // Multi-select for initial facedown or single
+        // Battle reveal temporary slots
+        let p1BattleCard = null;
+        let p2BattleCard = null;
+        let pendingBattleResolution = null;
+
+        let selectedHandCardIds = [];
         let selectedTargetGuardId = null;
 
         let gameLogs = [];
-        let pendingNextStep = null; // Callback when message clicked
+        let pendingNextStep = null;
 
-        // PeerJS state
         let peer = null;
         let peerConn = null;
 
@@ -654,8 +710,18 @@
 
         /* --- LOGGING --- */
         function addLog(msg) {
-            gameLogs.push(msg);
+            gameLogs.unshift(msg); // Latest at top
         }
+
+        /* --- GLOBAL TAP ANYWHERE LISTENER --- */
+        document.addEventListener('click', (e) => {
+            if (!pendingNextStep) return;
+            // Ignore click if user clicked inside interactive modals or buttons
+            if (e.target.closest('.modal') || e.target.closest('button:not(#actionControls button)')) {
+                return;
+            }
+            handleMessageClick();
+        });
 
         /* --- UI RENDER FUNCTIONS --- */
         function renderCard(card, options = {}) {
@@ -676,13 +742,13 @@
             const isRed = card.suit === '♥' || card.suit === '♦';
             const isJoker = card.num === 99;
             const colorClass = isJoker ? 'joker' : (isRed ? 'red' : 'black');
-            const displayNum = isJoker ? 'JK' : (card.num === 1 ? 'A' : card.num === 11 ? 'J' : card.num === 12 ? 'Q' : card.num === 13 ? 'K' : card.num);
+            const displayStr = getCardName(card.num);
 
             return `
                 <div class="card ${colorClass} ${isSelected ? 'selected' : ''} ${isDisabled ? 'disabled' : ''} ${extraClass}" ${onClick}>
-                    <div class="card-corner">${displayNum}<br>${card.suit}</div>
-                    <div class="card-center">${displayNum}</div>
-                    <div class="card-corner" style="transform: rotate(180deg);">${displayNum}<br>${card.suit}</div>
+                    <div class="card-corner">${displayStr}<br>${card.suit}</div>
+                    <div class="card-center">${displayStr}</div>
+                    <div class="card-corner" style="transform: rotate(180deg);">${displayStr}<br>${card.suit}</div>
                 </div>
             `;
         }
@@ -710,16 +776,24 @@
             renderPlayerArea('p1');
             renderPlayerArea('p2');
 
-            // Rate Slot
+            // Render Battle Slots (Top P2 / Bottom P1)
+            const p2SlotBox = document.getElementById('p2BattleSlot');
+            const p1SlotBox = document.getElementById('p1BattleSlot');
+            p2SlotBox.innerHTML = p2BattleCard ? renderCard(p2BattleCard) : '<div class="empty-slot">なし</div>';
+            p1SlotBox.innerHTML = p1BattleCard ? renderCard(p1BattleCard) : '<div class="empty-slot">なし</div>';
+
+            // Rate Slot (Vertical Top P2 / Bottom P1)
             const rateContainer = document.getElementById('rateSlotContainer');
             if (isGambleMode) {
                 rateContainer.classList.remove('hidden');
                 let rateHTML = '';
-                if (p1RateCard || p2RateCard) {
-                    rateHTML = `<div style="display:flex; gap:4px;">
-                        ${p1RateCard ? renderCard(p1RateCard, { isFacedown: true, isRate: true }) : ''}
-                        ${p2RateCard ? renderCard(p2RateCard, { isFacedown: true, isRate: true }) : ''}
-                    </div>`;
+                if (p2RateCard) {
+                    const isP2WinnerFlipped = (phase === 'GAME_OVER' && winnerPlayer === 'p2');
+                    rateHTML += renderCard(p2RateCard, { isFacedown: !isP2WinnerFlipped, isRate: true });
+                }
+                if (p1RateCard) {
+                    const isP1WinnerFlipped = (phase === 'GAME_OVER' && winnerPlayer === 'p1');
+                    rateHTML += renderCard(p1RateCard, { isFacedown: !isP1WinnerFlipped, isRate: true });
                 }
                 document.getElementById('rateSlot').innerHTML = rateHTML;
             } else {
@@ -760,11 +834,10 @@
             const handCards = p === 'p1' ? p1Hand : p2Hand;
             const facedownCards = p === 'p1' ? p1Facedown : p2Facedown;
 
-            // Render Hand
+            // Render Hand visually (Show face-up for active/player, face-down cards for opponent so count is visually clear)
             if (isMe || phase === 'GAME_OVER') {
                 handContainer.innerHTML = handCards.map(c => {
                     const isSelected = selectedHandCardIds.includes(c.id);
-                    // Disallow JOKER for Rate, First-Player, or Facedown actions!
                     const isJokerDisallowed = (c.num === 99) && (phase === 'RATE_SELECT' || phase === 'FIRST_PLAYER_SELECT' || phase === 'SETUP_FACEDOWN');
 
                     return renderCard(c, {
@@ -774,6 +847,7 @@
                     });
                 }).join('');
             } else {
+                // Render facedown cards matching opponent hand count
                 handContainer.innerHTML = handCards.map(() => renderCard(null, { isFacedown: true })).join('');
             }
 
@@ -818,7 +892,6 @@
             isGambleMode = document.getElementById('gambleModeToggle').checked;
             document.getElementById('menuModal').classList.add('hidden');
 
-            // Reset Deck
             p1Hand = initDeck();
             p2Hand = initDeck();
             p1Facedown = []; p2Facedown = [];
@@ -826,6 +899,8 @@
             p1Graveyard = []; p2Graveyard = [];
             p1RateCard = null; p2RateCard = null;
             p1FirstCard = null; p2FirstCard = null;
+            p1BattleCard = null; p2BattleCard = null;
+            winnerPlayer = null;
             selectedHandCardIds = []; selectedTargetGuardId = null;
             gameLogs = [];
 
@@ -855,7 +930,6 @@
             const hand = p === 'p1' ? p1Hand : p2Hand;
             const card = hand.find(c => c.id === cardId);
 
-            // JOKER restrictions
             if ((phase === 'RATE_SELECT' || phase === 'FIRST_PLAYER_SELECT' || phase === 'SETUP_FACEDOWN') && card.num === 99) {
                 alert('JOKERはレート札・先行決め札・伏せカードに指定できません！');
                 return;
@@ -864,7 +938,6 @@
             playSound(600, 0.05);
 
             if (phase === 'SETUP_FACEDOWN') {
-                // Multi select up to 3 cards
                 if (selectedHandCardIds.includes(cardId)) {
                     selectedHandCardIds = selectedHandCardIds.filter(id => id !== cardId);
                 } else {
@@ -875,7 +948,6 @@
                     }
                 }
             } else {
-                // Single selection
                 selectedHandCardIds = [cardId];
                 processSetupSelection(p, cardId);
             }
@@ -909,7 +981,7 @@
                         phase = 'FIRST_PLAYER_SELECT';
                         setupSubPhase = 'p1';
                         selectedHandCardIds = [];
-                        setMessage('【先行決め】P1: 先行決め札を1枚選んでタップしてください');
+                        setMessage('【先行決め】P1: 先行決め札を1枚選んでタップしてください (JOKER不可)');
                     } else if (gameMode === 'local') {
                         setupSubPhase = 'p2';
                         selectedHandCardIds = [];
@@ -921,7 +993,7 @@
                     phase = 'FIRST_PLAYER_SELECT';
                     setupSubPhase = 'p1';
                     selectedHandCardIds = [];
-                    setMessage('【先行決め】P1: 先行決め札を1枚選んでタップしてください');
+                    setMessage('【先行決め】P1: 先行決め札を1枚選んでタップしてください (JOKER不可)');
                 }
             } else if (phase === 'FIRST_PLAYER_SELECT') {
                 if (p === 'p1') {
@@ -947,33 +1019,56 @@
         }
 
         function determineFirstPlayer() {
-            p1Graveyard.push({ card: p1FirstCard, reason: '先行決め対戦', turn: 0 });
-            p2Graveyard.push({ card: p2FirstCard, reason: '先行決め対戦', turn: 0 });
-
             let p1Val = p1FirstCard.num;
             let p2Val = p2FirstCard.num;
 
-            let resultMsg = `先行決め: P1(${p1Val}) vs P2(${p2Val}) ➔ `;
+            p1BattleCard = p1FirstCard;
+            p2BattleCard = p2FirstCard;
+
+            if (p1Val === p2Val) {
+                // TIE -> Move used cards to graveyard and repeat First Player Select!
+                p1Graveyard.unshift({ card: p1FirstCard, reason: '先行決め引き分け', turn: 0 });
+                p2Graveyard.unshift({ card: p2FirstCard, reason: '先行決め引き分け', turn: 0 });
+
+                const tieMsg = `先行決め対決: P1(${getCardName(p1Val)}) vs P2(${getCardName(p2Val)}) ➔ 【引き分け！】<br>カードを墓地に送り再度先行決めを行います。`;
+                addLog(`先行決め引き分け P1(${getCardName(p1Val)}) vs P2(${getCardName(p2Val)})`);
+
+                p1FirstCard = null;
+                p2FirstCard = null;
+                phase = 'FIRST_PLAYER_SELECT';
+                setupSubPhase = 'p1';
+                selectedHandCardIds = [];
+
+                setMessage(`${tieMsg}<br>▶ タップして再度カードを選んでください`, () => {
+                    p1BattleCard = null;
+                    p2BattleCard = null;
+                    setMessage('【先行決め再挑戦】P1: 手札から先行決め札を1枚選んでタップしてください (JOKER不可)');
+                });
+                return;
+            }
+
+            p1Graveyard.unshift({ card: p1FirstCard, reason: '先行決め対戦', turn: 0 });
+            p2Graveyard.unshift({ card: p2FirstCard, reason: '先行決め対戦', turn: 0 });
+
+            let resultMsg = `先行決め: P1(${getCardName(p1Val)}) vs P2(${getCardName(p2Val)}) ➔ `;
 
             if (p1Val > p2Val) {
                 currentTurn = 'p1';
                 resultMsg += '【PLAYER 1 先行】';
-            } else if (p2Val > p1Val) {
+            } else {
                 currentTurn = 'p2';
                 resultMsg += '【PLAYER 2 先行】';
-            } else {
-                currentTurn = Math.random() < 0.5 ? 'p1' : 'p2';
-                resultMsg += `引き分けのためランダムで 【${currentTurn.toUpperCase()} 先行】`;
             }
 
             addLog(resultMsg);
 
-            // Move to Setup Facedown Phase (3 cards each)
             phase = 'SETUP_FACEDOWN';
-            setupSubPhase = currentTurn; // First player sets first
+            setupSubPhase = currentTurn;
             selectedHandCardIds = [];
 
             setMessage(`${resultMsg}<br>【初期ガード設定】手札からガードとして伏せるカードを【3枚】選んで「確定する」を押してください`, () => {
+                p1BattleCard = null;
+                p2BattleCard = null;
                 if (gameMode === 'cpu' && setupSubPhase === 'p2') {
                     executeCpuSetupFacedown();
                 }
@@ -992,7 +1087,6 @@
             const hand = p === 'p1' ? p1Hand : p2Hand;
             const facedown = p === 'p1' ? p1Facedown : p2Facedown;
 
-            // Remove selected cards and put into facedown
             selectedHandCardIds.forEach(id => {
                 const card = removeCardFromHand(hand, id);
                 facedown.push({ ...card, isFaceUp: false });
@@ -1004,7 +1098,6 @@
             const secondPlayer = currentTurn === 'p1' ? 'p2' : 'p1';
 
             if (setupSubPhase === currentTurn) {
-                // Switch to second player for setup
                 setupSubPhase = secondPlayer;
                 if (gameMode === 'cpu' && setupSubPhase === 'p2') {
                     executeCpuSetupFacedown();
@@ -1014,7 +1107,6 @@
                     setMessage(`【初期ガード設定】${secondPlayer.toUpperCase()} さんの番です。手札から3枚選んで「確定する」を押してください`);
                 }
             } else {
-                // Both finished setup -> Start Playing
                 phase = 'PLAYING';
                 setMessage(`初期カードの設定が完了しました！【${currentTurn.toUpperCase()}】の攻撃ターンです。`, () => {
                     if (gameMode === 'cpu' && currentTurn === 'p2') {
@@ -1026,9 +1118,7 @@
         }
 
         function executeCpuSetupFacedown() {
-            // CPU selects 3 non-joker cards
             const validCards = p2Hand.filter(c => c.num !== 99);
-            // Sort by middle numbers
             validCards.sort((a,b) => a.num - b.num);
             const chosen = validCards.slice(0, 3);
 
@@ -1101,53 +1191,109 @@
 
             const attackCard = removeCardFromHand(myHand, attackCardId);
 
-            // Direct Attack when opponent has no guards
+            // DIRECT ATTACK
             if (oppFacedown.length === 0) {
                 playSound(800, 0.3, 'square');
-                myWonCards.push(attackCard);
-                const msg = `【直接攻撃成功！】${currentTurn.toUpperCase()} 相手ガードなしのため ${attackCard.num} を勝ち札に！`;
-                addLog(msg);
-                endTurn(msg);
+
+                // Place in battle slots top/bottom
+                if (currentTurn === 'p1') {
+                    p1BattleCard = attackCard;
+                    p2BattleCard = null;
+                } else {
+                    p2BattleCard = attackCard;
+                    p1BattleCard = null;
+                }
+
+                phase = 'BATTLE_REVEAL';
+
+                const penaltyVal = 14 - (attackCard.num === 99 ? 14 : attackCard.num);
+                const penaltyMsg = applyPenalty(opponent, penaltyVal);
+
+                const logMsg = `直接攻撃成功！ 【${currentTurn.toUpperCase()}】(${getCardName(attackCard.num)}) ➔ 勝ち札獲得！ ${penaltyMsg}`;
+                addLog(logMsg);
+
+                setMessage(`⚔️ 【直接攻撃成功！】<br>攻撃札: <strong>${getCardName(attackCard.num)}</strong> ➔ 勝ち札へ<br>${penaltyMsg}`, () => {
+                    myWonCards.push(attackCard);
+                    p1BattleCard = null;
+                    p2BattleCard = null;
+                    phase = 'PLAYING';
+                    endTurn(`【${currentTurn.toUpperCase()}】の直接攻撃が成功しました。`);
+                });
                 return;
             }
 
-            // Attack Guarded Card
+            // ATTACK GUARD CARD
             const guardIdx = oppFacedown.findIndex(c => c.id === selectedTargetGuardId);
             const guardCard = oppFacedown[guardIdx];
 
             playSound(700, 0.2);
 
+            // Set Top/Bottom Battle Alignment
+            if (currentTurn === 'p1') {
+                p1BattleCard = attackCard;
+                p2BattleCard = guardCard;
+            } else {
+                p2BattleCard = attackCard;
+                p1BattleCard = guardCard;
+            }
+
+            phase = 'BATTLE_REVEAL';
+
             let myVal = attackCard.num;
             let oppVal = guardCard.num;
 
-            let logText = `攻撃対決: 【${currentTurn.toUpperCase()}】(${myVal}) vs 【${opponent.toUpperCase()}】(${oppVal}) ➔ `;
+            let attackCardName = getCardName(myVal);
+            let guardCardName = getCardName(oppVal);
+
+            let logText = `対決: 【${currentTurn.toUpperCase()}】(${attackCardName}) vs 【${opponent.toUpperCase()}】(${guardCardName}) ➔ `;
 
             if (myVal > oppVal) {
-                // ATTACK SUCCESS
+                // WIN
                 oppFacedown.splice(guardIdx, 1);
-                oppGraveyard.push({ card: guardCard, reason: `相手(${currentTurn.toUpperCase()})の攻撃により破壊`, turn: gameLogs.length });
-                myWonCards.push(attackCard);
-
-                // Penalty: Opponent discards (14 - winningNum)
-                const penaltyVal = 14 - attackCard.num;
+                const penaltyVal = 14 - (myVal === 99 ? 14 : myVal);
                 const penaltyMsg = applyPenalty(opponent, penaltyVal);
 
-                logText += `攻撃成功！相手カード破壊！ ${penaltyMsg}`;
+                logText += `攻撃成功！ガード(${guardCardName})破棄。 ${penaltyMsg}`;
+                addLog(logText);
+
+                setMessage(`⚔️ 【攻撃成功！】<br>攻撃(${attackCardName}) ＞ ガード(${guardCardName})<br>${penaltyMsg}`, () => {
+                    oppGraveyard.unshift({ card: guardCard, reason: `相手(${currentTurn.toUpperCase()})の攻撃(${attackCardName})により破棄`, turn: gameLogs.length });
+                    myWonCards.push(attackCard);
+                    p1BattleCard = null;
+                    p2BattleCard = null;
+                    phase = 'PLAYING';
+                    endTurn(logText);
+                });
+
             } else if (myVal < oppVal) {
-                // ATTACK FAIL
-                guardCard.isFaceUp = true; // Stay face up
-                myGraveyard.push({ card: attackCard, reason: `攻撃失敗により返り討ち`, turn: gameLogs.length });
-                logText += `攻撃失敗... ガードは表向きとして残ります。`;
+                // FAIL
+                guardCard.isFaceUp = true; // Guard revealed
+                logText += `攻撃失敗... ガード(${guardCardName})表向きで残留。`;
+                addLog(logText);
+
+                setMessage(`⚔️ 【攻撃失敗...】<br>攻撃(${attackCardName}) ＜ ガード(${guardCardName})<br>ガードカードは表向きで場に残ります`, () => {
+                    myGraveyard.unshift({ card: attackCard, reason: `攻撃(${attackCardName})失敗により返り討ち`, turn: gameLogs.length });
+                    p1BattleCard = null;
+                    p2BattleCard = null;
+                    phase = 'PLAYING';
+                    endTurn(logText);
+                });
+
             } else {
                 // DRAW
                 oppFacedown.splice(guardIdx, 1);
-                oppGraveyard.push({ card: guardCard, reason: `引き分けにより相打ち`, turn: gameLogs.length });
-                myGraveyard.push({ card: attackCard, reason: `引き分けにより相打ち`, turn: gameLogs.length });
-                logText += `引き分け！両者のカードが墓地へ。`;
-            }
+                logText += `引き分け！相打ちにより両者墓地へ。`;
+                addLog(logText);
 
-            addLog(logText);
-            endTurn(logText);
+                setMessage(`⚔️ 【引き分け (相打ち)】<br>攻撃(${attackCardName}) ＝ ガード(${guardCardName})<br>両者のカードが墓地へ移動します`, () => {
+                    oppGraveyard.unshift({ card: guardCard, reason: `引き分け(${guardCardName})により相打ち`, turn: gameLogs.length });
+                    myGraveyard.unshift({ card: attackCard, reason: `引き分け(${attackCardName})により相打ち`, turn: gameLogs.length });
+                    p1BattleCard = null;
+                    p2BattleCard = null;
+                    phase = 'PLAYING';
+                    endTurn(logText);
+                });
+            }
         }
 
         function applyPenalty(targetPlayer, penaltyNum) {
@@ -1158,25 +1304,24 @@
             let hIdx = hand.findIndex(c => c.num === penaltyNum);
             if (hIdx !== -1) {
                 const discarded = hand.splice(hIdx, 1)[0];
-                graveyard.push({ card: discarded, reason: `ペナルティ(${penaltyNum}) 手札から破棄`, turn: gameLogs.length });
-                return `ペナルティ: 手札から ${penaltyNum} を破棄！`;
+                graveyard.unshift({ card: discarded, reason: `ペナルティ(${getCardName(penaltyNum)}) 手札から破棄`, turn: gameLogs.length });
+                return `ペナルティ: 手札から [${getCardName(penaltyNum)}] を破棄！`;
             }
 
             let fIdx = facedown.findIndex(c => c.num === penaltyNum);
             if (fIdx !== -1) {
                 const discarded = facedown.splice(fIdx, 1)[0];
-                graveyard.push({ card: discarded, reason: `ペナルティ(${penaltyNum}) 伏せ場から破棄`, turn: gameLogs.length });
-                return `ペナルティ: 伏せ場から ${penaltyNum} を破棄！`;
+                graveyard.unshift({ card: discarded, reason: `ペナルティ(${getCardName(penaltyNum)}) 伏せ場から破棄`, turn: gameLogs.length });
+                return `ペナルティ: 伏せ場から [${getCardName(penaltyNum)}] を破棄！`;
             }
 
-            return `ペナルティ(${penaltyNum})に該当するカード無し。`;
+            return `ペナルティ: 該当する数字(${getCardName(penaltyNum)})無し。`;
         }
 
         function endTurn(lastLog) {
             selectedHandCardIds = [];
             selectedTargetGuardId = null;
 
-            // Check Game Over
             if (p1Hand.length === 0 && p2Hand.length === 0) {
                 finishGame(lastLog);
                 return;
@@ -1184,7 +1329,7 @@
 
             const nextTurn = currentTurn === 'p1' ? 'p2' : 'p1';
 
-            setMessage(`${lastLog}<br>▶ 【タップ】して ${nextTurn.toUpperCase()} のターンへ`, () => {
+            setMessage(`${lastLog}<br>▶ 画面のどこかをタップして ${nextTurn.toUpperCase()} のターンへ`, () => {
                 currentTurn = nextTurn;
                 updateUI();
 
@@ -1199,70 +1344,56 @@
         function finishGame(lastMsg) {
             phase = 'GAME_OVER';
 
-            // Reveal Rate Cards & Move to Graveyard if gamble mode
-            if (isGambleMode && p1RateCard && p2RateCard) {
-                p1Graveyard.push({ card: p1RateCard, reason: 'レート札 (ゲーム終了公開)', turn: '最終' });
-                p2Graveyard.push({ card: p2RateCard, reason: 'レート札 (ゲーム終了公開)', turn: '最終' });
-            }
-
-            let winner = null;
-            let resultDetail = '';
-
             const p1Count = p1WonCards.length;
             const p2Count = p2WonCards.length;
 
             if (p1Count > p2Count) {
-                winner = 'p1';
-                resultDetail = `勝ち札枚数: P1(${p1Count}枚) vs P2(${p2Count}枚)`;
+                winnerPlayer = 'p1';
             } else if (p2Count > p1Count) {
-                winner = 'p2';
-                resultDetail = `勝ち札枚数: P1(${p1Count}枚) vs P2(${p2Count}枚)`;
+                winnerPlayer = 'p2';
             } else {
-                // Sum tie breaker
                 const p1Sum = p1WonCards.reduce((a,c) => a + (c.num === 99 ? 0 : c.num), 0);
                 const p2Sum = p2WonCards.reduce((a,c) => a + (c.num === 99 ? 0 : c.num), 0);
 
-                if (isGambleMode) {
-                    winner = 'draw';
-                    resultDetail = `枚数同数 (${p1Count}枚) ➔ ギャンブルルールにより引き分け`;
+                if (p1Sum < p2Sum) {
+                    winnerPlayer = 'p1';
+                } else if (p2Sum < p1Sum) {
+                    winnerPlayer = 'p2';
                 } else {
-                    if (p1Sum < p2Sum) {
-                        winner = 'p1';
-                        resultDetail = `枚数同数 ➔ 数字合計の小さい方が勝ち: P1(${p1Sum}) vs P2(${p2Sum})`;
-                    } else if (p2Sum < p1Sum) {
-                        winner = 'p2';
-                        resultDetail = `枚数同数 ➔ 数字合計の小さい方が勝ち: P1(${p1Sum}) vs P2(${p2Sum})`;
-                    } else {
-                        winner = 'draw';
-                        resultDetail = `枚数・合計ともに完全同点!`;
-                    }
+                    winnerPlayer = 'draw';
                 }
             }
 
+            // Move Rate Cards to Graveyard
+            if (isGambleMode && p1RateCard && p2RateCard) {
+                p1Graveyard.unshift({ card: p1RateCard, reason: 'レート札 (ゲーム終了)', turn: '最終' });
+                p2Graveyard.unshift({ card: p2RateCard, reason: 'レート札 (ゲーム終了)', turn: '最終' });
+            }
+
+            let resultDetail = `勝ち札枚数: P1(${p1Count}枚) vs P2(${p2Count}枚)`;
             let scoreCalcText = '';
-            if (isGambleMode) {
-                if (winner === 'p1' || winner === 'p2') {
-                    const winnerRateCard = winner === 'p1' ? p1RateCard : p2RateCard;
-                    let rateVal = winnerRateCard.num;
-                    if (rateVal >= 11 || rateVal === 99) rateVal = 10;
 
-                    const diff = Math.abs(p1Count - p2Count);
-                    const payout = diff * rateVal;
-                    scoreCalcText = `<br>💰 勝者レート札: ${rateVal} × 差分${diff}枚 ➔ 獲得倍率: 【${payout} 倍】`;
-                }
+            if (isGambleMode && (winnerPlayer === 'p1' || winnerPlayer === 'p2')) {
+                const winnerRateCard = winnerPlayer === 'p1' ? p1RateCard : p2RateCard;
+                let rateVal = winnerRateCard.num;
+                if (rateVal >= 11 || rateVal === 99) rateVal = 10;
+
+                const diff = Math.abs(p1Count - p2Count);
+                const payout = diff * rateVal;
+                scoreCalcText = `<br>💰 勝者レート札: ${getCardName(rateVal)} × 差分${diff}枚 ➔ 倍率: 【${payout} 倍】`;
             }
 
-            const winText = winner === 'p1' ? '🎉 PLAYER 1 の勝利！' : winner === 'p2' ? '🎉 PLAYER 2 の勝利！' : '🤝 引き分け！';
+            const winText = winnerPlayer === 'p1' ? '🎉 PLAYER 1 の勝利！' : winnerPlayer === 'p2' ? '🎉 PLAYER 2 の勝利！' : '🤝 引き分け！';
             const finalMessage = `${lastMsg}<br><br><strong>${winText}</strong><br>${resultDetail}${scoreCalcText}`;
 
             addLog(`=== ゲーム終了: ${winText} ===`);
             setMessage(finalMessage);
 
-            playSound(winner === 'draw' ? 300 : 900, 0.5);
+            playSound(winnerPlayer === 'draw' ? 300 : 900, 0.5);
             updateUI();
         }
 
-        /* --- CPU AI LOGIC (3 LEVELS) --- */
+        /* --- CPU AI LOGIC --- */
         function executeCpuTurn() {
             if (phase !== 'PLAYING' || currentTurn !== 'p2') return;
 
@@ -1272,37 +1403,30 @@
             if (cpuHand.length === 0) return;
 
             if (cpuLevel === 'easy') {
-                // EASY: Completely Random
-                if (p1Guard.length === 0 || Math.random() < 0.5) {
-                    // Try to set facedown if available (non joker)
+                // EASY: Random
+                if (p1Guard.length === 0 || Math.random() < 0.3) {
                     const nonJokers = cpuHand.filter(c => c.num !== 99);
-                    if (nonJokers.length > 0) {
-                        const randomCard = nonJokers[Math.floor(Math.random() * nonJokers.length)];
-                        selectedHandCardIds = [randomCard.id];
+                    if (nonJokers.length > 0 && Math.random() < 0.3) {
+                        selectedHandCardIds = [nonJokers[0].id];
                         handleSetFacedownAction();
                         return;
                     }
                 }
-                // Random attack
-                const randomAttack = cpuHand[Math.floor(Math.random() * cpuHand.length)];
-                selectedHandCardIds = [randomAttack.id];
+                selectedHandCardIds = [cpuHand[Math.floor(Math.random() * cpuHand.length)].id];
                 if (p1Guard.length > 0) {
-                    const randomTarget = p1Guard[Math.floor(Math.random() * p1Guard.length)];
-                    selectedTargetGuardId = randomTarget.id;
+                    selectedTargetGuardId = p1Guard[Math.floor(Math.random() * p1Guard.length)].id;
                 }
                 handleAttackAction();
 
             } else if (cpuLevel === 'normal') {
-                // NORMAL: Basic Strategy
+                // NORMAL: Standard
                 if (p1Guard.length === 0) {
-                    // Direct Attack with highest
                     const sorted = [...cpuHand].sort((a,b) => b.num - a.num);
                     selectedHandCardIds = [sorted[0].id];
                     handleAttackAction();
                     return;
                 }
 
-                // Look for known face-up guards to beat
                 const faceUpGuards = p1Guard.filter(g => g.isFaceUp);
                 if (faceUpGuards.length > 0) {
                     for (let g of faceUpGuards) {
@@ -1316,31 +1440,22 @@
                     }
                 }
 
-                // Otherwise set facedown if low card or attack random
-                const nonJokers = cpuHand.filter(c => c.num !== 99);
-                if (nonJokers.length > 0 && Math.random() < 0.4) {
-                    nonJokers.sort((a,b) => a.num - b.num);
-                    selectedHandCardIds = [nonJokers[0].id];
-                    handleSetFacedownAction();
-                    return;
-                }
-
                 const sorted = [...cpuHand].sort((a,b) => b.num - a.num);
                 selectedHandCardIds = [sorted[0].id];
                 selectedTargetGuardId = p1Guard[Math.floor(Math.random() * p1Guard.length)].id;
                 handleAttackAction();
 
             } else {
-                // HARD: Advanced Strategy
+                // HARD (Aggressive & Strong: Rarely sets facedown)
                 if (p1Guard.length === 0) {
-                    // Direct attack with highest
+                    // Direct attack with highest card
                     const sorted = [...cpuHand].sort((a,b) => b.num - a.num);
                     selectedHandCardIds = [sorted[0].id];
                     handleAttackAction();
                     return;
                 }
 
-                // Check face up guards -> Beat with SMALLEST possible winning card
+                // 1. Target known face-up guard with SMALLEST winning card
                 const faceUpGuards = p1Guard.filter(g => g.isFaceUp);
                 if (faceUpGuards.length > 0) {
                     for (let g of faceUpGuards) {
@@ -1354,25 +1469,26 @@
                     }
                 }
 
-                // If high probability of winning, attack unknown card with Joker or 13/K
-                const highCard = cpuHand.find(c => c.num === 99 || c.num >= 12);
-                if (highCard && p1Guard.length > 0) {
-                    selectedHandCardIds = [highCard.id];
+                // 2. High chance to attack facedown guard with high card (JOKER, K, Q, J)
+                const highCards = cpuHand.filter(c => c.num === 99 || c.num >= 11).sort((a,b) => b.num - a.num);
+                if (highCards.length > 0) {
+                    selectedHandCardIds = [highCards[0].id];
                     selectedTargetGuardId = p1Guard[Math.floor(Math.random() * p1Guard.length)].id;
                     handleAttackAction();
                     return;
                 }
 
-                // Guard low card
-                const nonJokers = cpuHand.filter(c => c.num !== 99).sort((a,b) => a.num - b.num);
-                if (nonJokers.length > 0) {
-                    selectedHandCardIds = [nonJokers[0].id];
+                // 3. ONLY set facedown if card <= 3 AND CPU guard count < 2 AND very rarely
+                const lowNonJokers = cpuHand.filter(c => c.num <= 3).sort((a,b) => a.num - b.num);
+                if (lowNonJokers.length > 0 && p2Facedown.length < 2 && Math.random() < 0.25) {
+                    selectedHandCardIds = [lowNonJokers[0].id];
                     handleSetFacedownAction();
                     return;
                 }
 
-                // Fallback attack
-                selectedHandCardIds = [cpuHand[0].id];
+                // 4. Default: Attack with highest available card
+                const sortedHand = [...cpuHand].sort((a,b) => b.num - a.num);
+                selectedHandCardIds = [sortedHand[0].id];
                 selectedTargetGuardId = p1Guard[0].id;
                 handleAttackAction();
             }
@@ -1395,14 +1511,22 @@
 
         /* --- MODALS LOGIC --- */
         function openGraveyardModal() {
+            const p1WonBox = document.getElementById('p1WonList');
+            const p2WonBox = document.getElementById('p2WonList');
             const p1Box = document.getElementById('p1GraveyardList');
             const p2Box = document.getElementById('p2GraveyardList');
+
+            document.getElementById('p1WonCount').textContent = p1WonCards.length;
+            document.getElementById('p2WonCount').textContent = p2WonCards.length;
+
+            p1WonBox.innerHTML = p1WonCards.length === 0 ? '<span style="color:#888; font-size:0.75rem;">なし</span>' : p1WonCards.map(c => renderCard(c)).join('');
+            p2WonBox.innerHTML = p2WonCards.length === 0 ? '<span style="color:#888; font-size:0.75rem;">なし</span>' : p2WonCards.map(c => renderCard(c)).join('');
 
             p1Box.innerHTML = p1Graveyard.length === 0 ? '<p style="color:#aaa; font-size:0.8rem;">なし</p>' : p1Graveyard.map(item => `
                 <div class="graveyard-item">
                     ${renderCard(item.card)}
                     <div class="graveyard-reason">
-                        <div><strong>${item.card.num === 99 ? 'JOKER' : item.card.num} (${item.card.suit})</strong></div>
+                        <div><strong>${getCardName(item.card.num)} (${item.card.suit})</strong></div>
                         <div>理由: ${item.reason}</div>
                     </div>
                 </div>
@@ -1412,7 +1536,7 @@
                 <div class="graveyard-item">
                     ${renderCard(item.card)}
                     <div class="graveyard-reason">
-                        <div><strong>${item.card.num === 99 ? 'JOKER' : item.card.num} (${item.card.suit})</strong></div>
+                        <div><strong>${getCardName(item.card.num)} (${item.card.suit})</strong></div>
                         <div>理由: ${item.reason}</div>
                     </div>
                 </div>
@@ -1428,7 +1552,7 @@
         function openLogModal() {
             const logBox = document.getElementById('logList');
             logBox.innerHTML = gameLogs.length === 0 ? '<p style="color:#aaa;">ログはまだありません。</p>' : gameLogs.map((log, i) => `
-                <div class="log-item">#${i+1} ${log}</div>
+                <div class="log-item">#${gameLogs.length - i} ${log}</div>
             `).join('');
             document.getElementById('logModal').classList.remove('hidden');
         }
